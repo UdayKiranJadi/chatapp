@@ -1,4 +1,4 @@
-import { lowerCase } from "lodash";
+
 import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema({
