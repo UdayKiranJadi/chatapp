@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs"
 import User from "../models/User.js"
 import generateUniqueConnectCode from "../utils/generateUniqueConnectCode.js";
+import jwt from "jsonwebtoken"
 class AuthController {
     static async register(req, res) {
         try {
@@ -95,7 +96,7 @@ class AuthController {
 
     static async me(req, res) {
         try {
-            const user = await User.findById(req.body.id).select("-password");
+            const user = await User.findById(req.user.id).select("-password");
             if (!user) {
                 return res.status(400).json({ message: "User not Found" });
 
@@ -118,6 +119,10 @@ class AuthController {
             res.status(500).json({ message: "internal server error" });
 
         }
+    }
+    static async logout(req, res) {
+        res.cookie("jwt", "", {maxAge: 0});
+        res.json({message: "Logged out successfully!"});
     }
 
 
