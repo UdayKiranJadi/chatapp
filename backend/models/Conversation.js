@@ -15,7 +15,7 @@ const conversationSchema = new mongoose.Schema({
     content:String,
     timeStamp: Date
  },
- unreadCount:{
+ unreadCounts:{
     type:Map,
     of:Number,
     default:{}
@@ -26,10 +26,10 @@ conversationSchema.index({"participants.0":1, "participants.1":1}, {unique:true}
 
 conversationSchema.pre("save", function (next){
     if(this.participants && this.participants.length == 2){
-        this.participants = this  .participants.map(p.toString()).sort();
+        this.participants = this.participants.map((p) => p.toString()).sort();
 
     }
-    next();
+    
 
 })
 

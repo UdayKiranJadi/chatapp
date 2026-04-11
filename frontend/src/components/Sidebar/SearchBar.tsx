@@ -1,6 +1,8 @@
 import { Search } from "lucide-react";
+import { useConversationsContext } from "../../contexts/ConversationsContext";
 
 const SearchBar: React.FC = () => {
+     const {searchTerm, setSearchTerm} = useConversationsContext();
     return (
         <div className="p-4 relative bg-sky-500">
             <input
@@ -8,6 +10,9 @@ const SearchBar: React.FC = () => {
             type="text"
             placeholder="Search conversations.."
             className="w-full text-sm bg-sky-500 text-white placeholder-blue-200 rounded-full py-2 px-4 pl-10 focus:outline-none focus:ring-2 focus:ring-blue-200"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            
 
 />
 
