@@ -1,3 +1,4 @@
+import RedisService from "./services/RedisService.js";
 import { leaveAllRooms } from "./socket/helpers.js";
 import { notifyConversationOnlineStatus } from "./socket/socketConversation.js";
 
@@ -9,13 +10,28 @@ export const initializeSocket = async (io) => {
             console.log("User Connecting", user.id);
             socket.join(user._id.toString());
 
+            await RedisService.addUserSession(user.id, socket.id);
+
             await notifyConversationOnlineStatus(io, socket, true);
 
 
 
             socket.on('disconnect', async() => {
-                leaveAllRooms(socket);
-                 await notifyConversationOnlineStatus(io, socket, false);
+                
+               
+                 await RedisService.removeUserSession(user.id, socket.id);
+
+                 const isOnline = await RedisService.isUserOnline(user.id);
+                 if(!isOnline){
+                    await notifyConversationOnlineStatus(io, socket, false);
+                    leaveAllRooms(socket);
+
+                 }
+
+
+                 
+
+
 
             })
             
