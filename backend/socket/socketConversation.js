@@ -1,6 +1,7 @@
 import Friendship from "../models/Friendship.js";
 import User from "../models/User.js";
 import Conversation from "../models/Conversation.js";
+import Message from "../models/Message.js";
 import {getChatRoom} from "./helpers.js"
 import RedisService from "../services/RedisService.js"
 
@@ -163,5 +164,100 @@ export const conversationMarkAsRead = async (io, socket, data) => {
     } catch (error) {
        console.error("Error marking conversation as read", error) ;
        socket.emit("conversation:mark-as-read:error",{error: "Error:conversation:mark-as-read:error"})
+    }
+}
+
+export const conversationSendMessage = async (io, socket, data) => {
+    try {
+        const {conversationId, friendId, content} = data;
+        const userId = socket.userId;
+        const user = socket.user;
+
+        const friendship = await Friendship.findOne({
+            $or : [
+                {requester:userId, recipient: friendId},
+                {requester:friendId,recipient:userId}
+            ]
+        })
+
+        if(!friendship){
+            socket.emit("conversation:send-message:error",{error: "No friendship Found"})
+            return;
+
+        }
+        const conversation = await Conversation.findById(conversationId);
+        if(!conversation){
+            socket.emit("conversation:send-message:error",{error: "No conversation Found"})
+            return;
+        }
+
+        const message = new Message({
+            conversation: conversation.id,
+            sender:userId,
+            content,
+
+        })
+        await message.save();
+
+        const currentUnreadCount = conversation.unreadCounts.get(friendId) || 0;
+        conversation.unreadCounts.set(friendId, currentUnreadCount + 1);
+        await conversation.save();
+
+        const messageData = {
+            _id:message.id,
+            sender : {
+                _i:userId.toString(),
+                username:user.username,
+
+            },
+            content,
+            createdAt: message.createdAt,
+            read:message.read,
+
+        }
+        
+        const updatedConversation = await Conversation.findById(conversationId);
+        
+        const room = getChatRoom(userId, friendId);
+        io.to(room).emit("conversation:new-message",{
+            conversationId:conversation.id,
+            message: messageData,
+
+        })
+        io.to(room).emit("conversation:update-conversation",{
+            conversationId:conversation.id,
+            lastMessage:updatedConversation.lastMessagePreview,
+            unreadCounts:{
+                [userID.toString()]:updatedConversation.unreadCounts.get(userId.toString()),
+                [friendId]:updatedConversation.unreadCounts.get(friendId)
+            },
+            
+        })
+
+
+
+
+
+        
+    } catch (error) {
+        console.error("Error sending message", error) ;
+       socket.emit("conversation:send-message:error",{error: "Error:conversation:send-message:error"})
+    }
+}
+
+export const conversation = async (io, socket, data) => {
+    try {
+        const {friendId, isTyping} = data;
+        const userId = socket.userId;
+
+        if(userId.toString() === friendId) return;
+
+        socket.to(friendId).emit("conversation:update-typing",{
+            userId:userId.toString(),
+            isTyping,
+        })
+
+    } catch (error) {
+        console.error("Error sending conversation typing sate", error);
     }
 }

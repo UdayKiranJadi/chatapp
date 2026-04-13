@@ -4,6 +4,7 @@ import { useConversationStore } from "../../stores/conversationStore";
 import MessageItem from "./MessageItem";
 import { useAuthStore } from "../../stores/authStore";
 import { useSocketContext } from "../../contexts/SocketContext";
+import { useMessageListen } from "../../hooks/useMessageListen";
 
 
 
@@ -40,6 +41,8 @@ const MessageList: React.FC = () => {
         })
 
     },[data, selectedConversation,socket, user])
+
+    useMessageListen(selectedConversation?.conversationId, selectedConversation?.friend.id, containerRef);
 
     if(isLoading){
         return <div className="relative flex-1 h-full flex items-center justify-center">
