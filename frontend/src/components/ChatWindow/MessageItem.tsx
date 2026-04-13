@@ -46,6 +46,15 @@ const MessageItem: React.FC<Message> = ({
 
 
     return <>
+    <div className="flex mb-4">
+        <img src="https://testingbot.com/free-online-tools/random-avatar/300" alt={sender.username} className="size-8 rounded-full object-cover mr-2" />
+            <div className="bg-white p-3 max-w-xs lg:max-w-md rounded-2xl">
+                <p className="text-sm">{content}</p>
+                <span className="text-xs text-gray-500 flex items-center gap-1 text-blue-100 mt-1">{displayTime}</span>
+
+            </div>
+
+        </div>
     </>
 }
 

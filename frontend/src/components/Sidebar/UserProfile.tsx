@@ -19,8 +19,7 @@ const UserProfile: React.FC = () => {
 
     return (
         <div className="p-4 border-t border-gray-200 flex items-center space-x-3">
-            <img src="https://testingbot.com/free-online-tools/random-avatar/300
-" alt="User" className="size-10 rounded-full object-cover" />
+            <img src="https://testingbot.com/free-online-tools/random-avatar/300" alt="User" className="size-10 rounded-full object-cover" />
 
             <div className="flex-1 min-w-0">
                 <h2 className="font-semibold truncate text-sm">{user?.username} ({user?.connectCode})</h2>

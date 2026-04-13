@@ -74,20 +74,35 @@ async function seed() {
         })
 
         console.log(`Conversation created ${conversation.id}`);
-        
-        const message = await Message.create({
-            sender:user1._id,
-            content: "Hey Bob, Welcome to the chat",
+
+        const messages = [];
+        for (let i = 0; i < 30; i++){
+            const sender = i%2 === 0 ? user1 : user2;
+            const content = `Message ${i + 1} from ${sender.username}`;
+
+            const message = await Message.create({
+            sender,
+            content:content,
             conversation: conversation._id,
 
         });
+        messages.push(message);
 
-        conversation.unreadCounts.set(user2._id.toString(),1);
-        conversation.unreadCounts.set(user1._id.toString(),0);
+        }
+        const lastMessage = messages[messages.length-1];
+
+
+
+
+        
+        
+
+        conversation.unreadCounts.set(user2._id.toString(),lastMessage.sender.equals(user2._id) ? 0 : 1);
+        conversation.unreadCounts.set(user1._id.toString(),lastMessage.sender.equals(user1._id) ? 0 : 1);
 
         await conversation.save();
 
-        console.log(`Message created ${message.id}`);
+       
         await mongoose.disconnect();
         console.log("Disconnected from MongoDB");
 
