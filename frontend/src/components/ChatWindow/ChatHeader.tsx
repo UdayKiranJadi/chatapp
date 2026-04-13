@@ -9,13 +9,20 @@ const ChatHeader: React.FC = () => {
     return <>
     <div className="p-4 border-b border-gray-200 flex items-center justify-between">
         <div className="flex items-center space-x-3">
-            <img src="https://testingbot.com/free-online-tools/random-avatar/300" alt="user Image" className="size-0 rounded-full object-cover"/>
+            <img src="https://testingbot.com/free-online-tools/random-avatar/300" alt="user Image" className="size-10 rounded-full object-cover"/>
             <div>
-                <h2 className="font-semibold">{conversation?.friend?.username}</h2>
-                <p className={`${conveersation?.friend.online ? "text-sm text-green-500" : 'text-sm text-gray-500'}`}>
-                    {conversation?.friend.online ? 'online': 'Offline'}
+                <h2 className="font-semibold">{selectedConversation?.friend?.username}</h2>
+                <p className={`${selectedConversation?.friend.online ? "text-sm text-green-500" : 'text-sm text-gray-500'}`}>
+                    {selectedConversation?.friend.online ? 'online': 'Offline'}
                 </p>
             </div>
+
+        </div>
+        <div className="flex space-x-4">
+            <button className="text-gray-500 hover:text-gray-700 cursor-pointer">
+                <EllipsisVertical className="size-[16px]" />
+
+            </button>
 
         </div>
         
