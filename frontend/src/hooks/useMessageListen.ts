@@ -14,6 +14,7 @@ export function useMessageListen(
     const {user} = useAuthStore();
     const {socket} = useSocketContext();
     const queryClient = useQueryClient();
+    const sound = new Audio("/pop.mp3")
 
     useEffect (() => {
         if(!conversationId || !friendId || !socket) return;
@@ -40,6 +41,15 @@ export function useMessageListen(
                 return {...currentData, pages:updatesPages}
             }
             )
+
+            if(payload.message.sender._id !== user?.id){
+                try {
+                    sound.currentTime = 0;
+                    sound.play();
+                } catch (error) {
+                    console.warn("Audio playback Failed",error);
+                }
+            }
             setTimeout(()=> {
                 if(!containerRef.current) return;
 

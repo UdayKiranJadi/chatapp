@@ -5,6 +5,8 @@ import MessageItem from "./MessageItem";
 import { useAuthStore } from "../../stores/authStore";
 import { useSocketContext } from "../../contexts/SocketContext";
 import { useMessageListen } from "../../hooks/useMessageListen";
+import { useTypingListen } from "../../hooks/useTypingListen";
+import TypingIndicator from "./TypingIndicator";
 
 
 
@@ -21,18 +23,22 @@ const MessageList: React.FC = () => {
     
     } = useMessages(selectedConversation?.conversationId, containerRef);
     const {socket} = useSocketContext();
+
+    const previousConversationIdRef = useRef<string | null>(null);
+
     
 
     const allMessages = data?.pages.slice().flatMap((page) => page.messages) ?? [];
 
     useEffect(() => {
         if(!selectedConversation?.conversationId) return;
-        if(data?.pages.length == 1){
+        if(data?.pages.length && previousConversationIdRef.current !== selectedConversation.conversationId){
             setTimeout(() => {
                 if(containerRef.current){
                     containerRef.current.scrollTop = containerRef.current.scrollHeight;
                 }
             },0)
+            previousConversationIdRef.current = selectedConversation.conversationId;
         }
         socket?.emit("conversation:mark-as-read",{
             conversationId:selectedConversation?.conversationId,
@@ -43,6 +49,11 @@ const MessageList: React.FC = () => {
     },[data, selectedConversation,socket, user])
 
     useMessageListen(selectedConversation?.conversationId, selectedConversation?.friend.id, containerRef);
+
+    const {isTyping} = useTypingListen(
+        selectedConversation?.friend.id,
+        containerRef
+    )
 
     if(isLoading){
         return <div className="relative flex-1 h-full flex items-center justify-center">
@@ -73,6 +84,8 @@ const MessageList: React.FC = () => {
 
             </div>
         ))}
+
+        {isTyping && <TypingIndicator />}
 
 
     
