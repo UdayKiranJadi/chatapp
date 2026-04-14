@@ -3,15 +3,21 @@ import User from "../models/User.js";
 
 const authMiddleware = async (req, res, next) => {
   try {
-    const token = req.cookies?.jwt;
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ message: "User not authorized" });
+    }
+
+    const token = authHeader.split(" ")[1];
 
     if (!token) {
       return res.status(401).json({ message: "User not authorized" });
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
     const userId = decoded.id || decoded.userId;
+
     if (!userId) {
       return res.status(401).json({ message: "Invalid token" });
     }

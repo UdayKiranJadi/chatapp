@@ -41,7 +41,20 @@ class AuthController {
 
       await user.save();
 
-      return res.status(201).json({ success: true });
+      const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
+        expiresIn: "7d",
+      });
+
+      return res.status(201).json({
+        token,
+        user: {
+          id: user.id,
+          username: user.username,
+          fullName: user.fullName,
+          email: user.email,
+          connectCode: user.connectCode,
+        },
+      });
     } catch (error) {
       console.log("Registration error", error);
       return res.status(500).json({ message: "Internal server error" });
@@ -72,14 +85,8 @@ class AuthController {
         expiresIn: "7d",
       });
 
-      res.cookie("jwt", token, {
-        maxAge: 7 * 24 * 60 * 60 * 1000,
-        httpOnly: true,
-        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-        secure: process.env.NODE_ENV === "production",
-      });
-
       return res.status(200).json({
+        token,
         user: {
           id: user.id,
           username: user.username,
@@ -96,19 +103,13 @@ class AuthController {
 
   static async me(req, res) {
     try {
-      const user = await User.findById(req.user.id).select("-password");
-
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
-
       return res.status(200).json({
         user: {
-          id: user.id,
-          username: user.username,
-          fullName: user.fullName,
-          email: user.email,
-          connectCode: user.connectCode,
+          id: req.user.id,
+          username: req.user.username,
+          fullName: req.user.fullName,
+          email: req.user.email,
+          connectCode: req.user.connectCode,
         },
       });
     } catch (error) {
@@ -118,13 +119,6 @@ class AuthController {
   }
 
   static async logout(req, res) {
-    res.cookie("jwt", "", {
-      maxAge: 0,
-      httpOnly: true,
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-      secure: process.env.NODE_ENV === "production",
-    });
-
     return res.json({ message: "Logged out successfully!" });
   }
 }

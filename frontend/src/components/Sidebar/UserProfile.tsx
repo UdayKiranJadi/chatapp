@@ -6,38 +6,51 @@ import { useNavigate } from "react-router";
 import { useConversationStore } from "../../stores/conversationStore";
 
 const UserProfile: React.FC = () => {
-    const {user, logout} = useAuthStore();
-    const queryClient = useQueryClient();
-    const navigate = useNavigate();
-    const {selectedConversation, setSelectedConversation} = useConversationStore();
+  const { user, logout } = useAuthStore();
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
+  const { selectedConversation, setSelectedConversation } = useConversationStore();
 
-    const logoutUser = async () => {
-        await authService.logout();
-        logout();
-        await queryClient.removeQueries();
+  const logoutUser = async () => {
+    try {
+      await authService.logout();
+    } catch (error) {
+      console.error("Logout error", error);
+    } finally {
+      logout();
+      queryClient.clear();
 
-        if(selectedConversation){
-            setSelectedConversation(null);
-        }
+      if (selectedConversation) {
+        setSelectedConversation(null);
+      }
 
-        return navigate('/auth');
+      navigate("/auth");
     }
+  };
 
-    return (
-        <div className="p-4 border-t border-gray-200 flex items-center space-x-3">
-            <img src="https://testingbot.com/free-online-tools/random-avatar/300" alt="User" className="size-10 rounded-full object-cover" />
+  return (
+    <div className="p-4 border-t border-gray-200 flex items-center space-x-3">
+      <img
+        src="https://testingbot.com/free-online-tools/random-avatar/300"
+        alt="User"
+        className="size-10 rounded-full object-cover"
+      />
 
-            <div className="flex-1 min-w-0">
-                <h2 className="font-semibold truncate text-sm">{user?.username} ({user?.connectCode})</h2>
-                <p className="text-xs text-gray-500">Online</p>
+      <div className="flex-1 min-w-0">
+        <h2 className="font-semibold truncate text-sm">
+          {user?.username} ({user?.connectCode})
+        </h2>
+        <p className="text-xs text-gray-500">Online</p>
+      </div>
 
-            </div>
-            <button onClick={() => logoutUser()} className="text-gray-500 hover:text-gray-700 cursor-pointer">
-                <LogOut className="size-[16px]"/>
-            </button>
- 
+      <button
+        onClick={logoutUser}
+        className="text-gray-500 hover:text-gray-700 cursor-pointer"
+      >
+        <LogOut className="size-[16px]" />
+      </button>
+    </div>
+  );
+};
 
-        </div>
-    )
-}
 export default UserProfile;

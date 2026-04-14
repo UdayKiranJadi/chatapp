@@ -24,7 +24,7 @@ type LoginFormData = z.infer<typeof loginSchema>;
 
 const LoginForm: React.FC<LoginFormProps> = ({ onSwitch }) => {
   const navigate = useNavigate();
-  const { setUser } = useAuthStore();
+const { setAuth } = useAuthStore();
 
   const {
     register,
@@ -37,11 +37,11 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSwitch }) => {
   const mutation = useMutation({
     mutationFn: authService.login,
     onSuccess: (data) => {
-      const { user } = data;
-      setUser(user);
-      toast.success("Login successful!");
-      navigate("/");
-    },
+  const { user } = data;
+  setAuth(user);
+  toast.success("Login successful!");
+  navigate("/");
+},
     onError: (error: AxiosError<{ message: string }>) => {
       const msg = error.response?.data?.message || "Login failed";
       toast.error(msg);
