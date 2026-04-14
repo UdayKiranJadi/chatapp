@@ -1,4 +1,5 @@
 import { useConversationsContext } from "../../contexts/ConversationsContext.tsx";
+import ConversationItem from "./ConversationItem.tsx";
 
 const Conversations: React.FC = () => {
     const {filteredConversations, isLoading, isError} = useConversationsContext();
@@ -18,7 +19,7 @@ const Conversations: React.FC = () => {
 
     return (
         <div className="flex-1 overflow-y-auto">
-            {}
+            {filteredConversations.map((conversation) => <ConversationItem key={conversation.conversationId} {...conversation} />)}
 
         </div>
     )

@@ -21,20 +21,23 @@ export function useTypingListen(
     useEffect(() => {
         if(!socket || !friendId) return;
 
-        const handleTyping = (payload: {userId:string; isTyping:boolean}) => {
-            setIsTyping(payload.isTyping);
-            const wasNearBottom = isNearBottom(containerRef);
-            if(payload.isTyping && wasNearBottom){
-                setTimeout(() => {
-                    if(!containerRef.current) return;
-                    containerRef.current.scrollTo({
-                        top: containerRef.current.scrollHeight,
-                        behavior:'smooth'
+        const handleTyping = (payload: { userId: string; isTyping: boolean }) => {
+  if (payload.userId !== friendId) return;
 
-                    })
-                },0)
-            }
-        }
+  setIsTyping(payload.isTyping);
+
+  const wasNearBottom = isNearBottom(containerRef);
+
+  if (payload.isTyping && wasNearBottom) {
+    setTimeout(() => {
+      if (!containerRef.current) return;
+      containerRef.current.scrollTo({
+        top: containerRef.current.scrollHeight,
+        behavior: "smooth",
+      });
+    }, 0);
+  }
+};
 
         socket.on('conversation:update-typing',handleTyping);
 

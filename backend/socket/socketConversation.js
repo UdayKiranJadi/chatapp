@@ -71,7 +71,7 @@ export const conversationRequest = async (io, socket, data) => {
             return;
         }
         const friendship = await Friendship.create({
-            requestor:userId,
+            requester:userId,
             recipient:friend._id,
         })
         const conversation = await Conversation.create({
@@ -98,7 +98,7 @@ export const conversationRequest = async (io, socket, data) => {
                 fullName:friend.fullName,
                 username:friend.username,
                 connectCode:friend.connectCode,
-                Online: await RedisService.isUserOnline(friend._id.toString()),
+                online: await RedisService.isUserOnline(friend._id.toString()),
 
             }
         })
@@ -110,7 +110,7 @@ export const conversationRequest = async (io, socket, data) => {
                 fullName:user.fullName,
                 username:user.username,
                 connectCode:user.connectCode,
-                Online: await RedisService.isUserOnline(user._id.toString()),
+                online: await RedisService.isUserOnline(user._id.toString()),
                 
             }
         })
@@ -206,7 +206,7 @@ export const conversationSendMessage = async (io, socket, data) => {
         const messageData = {
             _id:message.id,
             sender : {
-                _i:userId.toString(),
+                _id:userId.toString(),
                 username:user.username,
 
             },
@@ -228,7 +228,7 @@ export const conversationSendMessage = async (io, socket, data) => {
             conversationId:conversation.id,
             lastMessage:updatedConversation.lastMessagePreview,
             unreadCounts:{
-                [userID.toString()]:updatedConversation.unreadCounts.get(userId.toString()),
+                [userId.toString()]:updatedConversation.unreadCounts.get(userId.toString()),
                 [friendId]:updatedConversation.unreadCounts.get(friendId)
             },
             
@@ -245,7 +245,7 @@ export const conversationSendMessage = async (io, socket, data) => {
     }
 }
 
-export const conversation = async (io, socket, data) => {
+export const conversationTyping = async (io, socket, data) => {
     try {
         const {friendId, isTyping} = data;
         const userId = socket.userId;

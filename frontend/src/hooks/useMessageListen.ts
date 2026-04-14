@@ -5,67 +5,78 @@ import { useQueryClient, type InfiniteData } from "@tanstack/react-query";
 import { toast } from "sonner";
 import type { Message } from "../services/messageService";
 
-
 export function useMessageListen(
-    conversationId:string | undefined,
-    friendId: string | undefined,
-    containerRef:RefObject<HTMLDivElement | null>
+  conversationId: string | undefined,
+  friendId: string | undefined,
+  containerRef: RefObject<HTMLDivElement | null>
 ) {
-    const {user} = useAuthStore();
-    const {socket} = useSocketContext();
-    const queryClient = useQueryClient();
-    const sound = new Audio("/pop.mp3")
+  const { user } = useAuthStore();
+  const { socket } = useSocketContext();
+  const queryClient = useQueryClient();
 
-    useEffect (() => {
-        if(!conversationId || !friendId || !socket) return;
-        
-        const handleSendMessageError = (error:{error: string}) => toast.error(error.error);;
+  useEffect(() => {
+    if (!conversationId || !friendId || !socket) return;
 
-        const handleNewMessage = (payload:{conversationId:string, message: Message}) => {
-            if(payload.conversationId !== conversationId) return;
+    const sound = new Audio("/pop.mp3");
 
-            queryClient.setQueryData(
-                ['messages',conversationId],
-                (currentData: InfiniteData<{messages: Message[], nextCursor:string,hasNext:boolean}>) =>{
-                    if(!currentData || !currentData.pages.length) return currentData;
+    const handleSendMessageError = (error: { error: string }) => {
+      toast.error(error.error);
+    };
 
-                    const messages = currentData.pages.flatMap((page) => page.messages);
-                    if(messages.some((message:Message) =>  message._id === payload.message._id)) return currentData;
+    const handleNewMessage = (payload: { conversationId: string; message: Message }) => {
+      if (payload.conversationId !== conversationId) return;
 
-                    const updatesPages = [...currentData.pages];
-                    updatesPages[0] = {
-                        ...updatesPages[0],
-                         messages: [...updatesPages[0].messages, payload.message]                    
+      queryClient.setQueryData(
+        ["messages", conversationId],
+        (
+          currentData: InfiniteData<{
+            messages: Message[];
+            nextCursor: string;
+            hasNext: boolean;
+          }> | undefined
+        ) => {
+          if (!currentData || !currentData.pages.length) return currentData;
 
-                }
-                return {...currentData, pages:updatesPages}
-            }
-            )
+          const messages = currentData.pages.flatMap((page) => page.messages);
+          if (messages.some((message: Message) => message._id === payload.message._id)) {
+            return currentData;
+          }
 
-            if(payload.message.sender._id !== user?.id){
-                try {
-                    sound.currentTime = 0;
-                    sound.play();
-                } catch (error) {
-                    console.warn("Audio playback Failed",error);
-                }
-            }
-            setTimeout(()=> {
-                if(!containerRef.current) return;
+          const updatedPages = [...currentData.pages];
+          updatedPages[0] = {
+            ...updatedPages[0],
+            messages: [...updatedPages[0].messages, payload.message],
+          };
 
-                containerRef.current.scrollTo({
-                    top:containerRef.current.scrollHeight,
-                    behavior:'smooth'
-                })
-            },0)
-        
+          return { ...currentData, pages: updatedPages };
         }
-        return () => {
-            socket.off("conversation:new-message",handleNewMessage);
-            socket.off("conversation:send-message:error",handleSendMessageError);
+      );
+
+      if (payload.message.sender._id !== user?.id) {
+        try {
+          sound.currentTime = 0;
+          sound.play();
+        } catch (error) {
+          console.warn("Audio playback failed", error);
         }
+      }
 
+      setTimeout(() => {
+        if (!containerRef.current) return;
 
-    },[conversationId,friendId,user,socket,queryClient])
+        containerRef.current.scrollTo({
+          top: containerRef.current.scrollHeight,
+          behavior: "smooth",
+        });
+      }, 0);
+    };
 
+    socket.on("conversation:new-message", handleNewMessage);
+    socket.on("conversation:send-message:error", handleSendMessageError);
+
+    return () => {
+      socket.off("conversation:new-message", handleNewMessage);
+      socket.off("conversation:send-message:error", handleSendMessageError);
+    };
+  }, [conversationId, friendId, user, socket, queryClient, containerRef]);
 }
