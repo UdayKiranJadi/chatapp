@@ -24,7 +24,7 @@ type LoginFormData = z.infer<typeof loginSchema>;
 
 const LoginForm: React.FC<LoginFormProps> = ({ onSwitch }) => {
   const navigate = useNavigate();
-const { setAuth } = useAuthStore();
+  const { setAuth } = useAuthStore();
 
   const {
     register,
@@ -37,11 +37,11 @@ const { setAuth } = useAuthStore();
   const mutation = useMutation({
     mutationFn: authService.login,
     onSuccess: (data) => {
-  const { user } = data;
-  setAuth(user);
-  toast.success("Login successful!");
-  navigate("/");
-},
+      const { user, token } = data;
+      setAuth(user, token);
+      toast.success("Login successful!");
+      navigate("/");
+    },
     onError: (error: AxiosError<{ message: string }>) => {
       const msg = error.response?.data?.message || "Login failed";
       toast.error(msg);
@@ -52,8 +52,12 @@ const { setAuth } = useAuthStore();
 
   return (
     <>
-      <h2 className="text-2xl font-bold text-dark mb-2">Sign In to Your Account</h2>
-      <p className="text-gray-500 text-sm mb-8">Enter your credentials to continue</p>
+      <h2 className="text-2xl font-bold text-dark mb-2">
+        Sign In to Your Account
+      </h2>
+      <p className="text-gray-500 text-sm mb-8">
+        Enter your credentials to continue
+      </p>
 
       <form onSubmit={handleSubmit(onSubmit)}>
         <div>
@@ -75,7 +79,10 @@ const { setAuth } = useAuthStore();
         </div>
 
         <div>
-          <label htmlFor="password" className="block text-gray-700 mb-2 text-sm">
+          <label
+            htmlFor="password"
+            className="block text-gray-700 mb-2 text-sm"
+          >
             Password
           </label>
           <div className="relative mb-2">
